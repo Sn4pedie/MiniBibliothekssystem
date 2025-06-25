@@ -8,10 +8,17 @@ import utility
 
 
 class Library:
+    """
+    Die Library-Klasse repräsentiert das Mini-Bibliothekssystem und verwaltet Bücher und Mitglieder.
+    """
+
     book_list = list()
     member_list = list()
 
     def menu(self):
+        """
+        Zeigt das Hauptmenü an und verarbeitet die Benutzerauswahl.
+        """
         while True:
             print("\nMini-Bibliothekssystem")
             print("1. Alle Bücher anzeigen")
@@ -31,6 +38,9 @@ class Library:
                 print("Ungültige Auswahl. Bitte nochmal versuchen.")
 
     def list_books(self):
+        """
+        Zeigt alle Bücher an und bietet Auswahlmöglichkeiten zur weiteren Bearbeitung.
+        """
         if not self.book_list:
             print("Keine Bücher gespeichert.")
             return
@@ -82,6 +92,10 @@ class Library:
                 print("Ungültige Eingabe!")
 
     def list_member(self, only_list=False):
+        """
+        Zeigt alle Mitglieder an und bietet Auswahlmöglichkeiten zur weiteren Bearbeitung.
+        :param only_list: Wenn True, werden keine weiteren Optionen angezeigt.
+        """
         if not self.member_list:
             print("Keine Mitglieder gespeichert.")
             return
@@ -128,6 +142,10 @@ class Library:
                     print("Ungültige Eingabe!")
 
     def list_member_books(self, member):
+        """
+        Zeigt alle ausgeliehenen Bücher eines Mitglieds an und bietet Optionen zur Rückgabe.
+        :param member: Das Mitglied, dessen Bücher angezeigt werden.
+        """
         member.list_borrowed_books()
         print("Eingabe: 0 -> Hauptmenü, 1 -> Buch zurückgeben, 2 -> Mitglieder anzeigen\n")
         while True:
@@ -135,6 +153,7 @@ class Library:
             if eingabe == "1":
                 user_input_id = input("Gib ID ein: ")
                 try:
+                    # Buch anhand der Liste ausgeliehener Bücher auswählen
                     user_input_book = member.borrowed_books[int(user_input_id)]
                     self.get_back(user_input_book, "member_books")
                     break
@@ -152,6 +171,9 @@ class Library:
                 print("Falsche Eingabe!")
 
     def add_book(self):
+        """
+        Legt ein neues Buch anhand von Nutzereingaben an und fügt es der Bibliothek hinzu.
+        """
         title_ok = author_ok = isbn_ok = storage_location_ok = False
         new_title = new_author = new_isbn = new_storage_location = ""
 
@@ -185,6 +207,7 @@ class Library:
 
             if not storage_location_ok:
                 storage_location = input("Gebe die Lagerposition ein: ")
+                # Lagerplatz muss eindeutig und nicht leer sein
                 if utility.check_if_empty(storage_location) or \
                         any(book.storage_location == storage_location
                             for book in self.book_list):
@@ -198,6 +221,10 @@ class Library:
             Book(new_title, new_author, new_isbn, new_storage_location))
 
     def remove_book(self, book):
+        """
+        Entfernt ein Buch aus der Bibliothek und aktualisiert ggf. das Mitglied.
+        :param book: Das zu entfernende Buch.
+        """
         for member in self.member_list:
             if member.member_id == book.borrowed_from:
                 member.give_back(book)
@@ -206,6 +233,9 @@ class Library:
         self.list_books()
 
     def add_member(self):
+        """
+        Legt ein neues Mitglied anhand von Nutzereingaben an und fügt es der Bibliothek hinzu.
+        """
         new_name = ""
         new_member_id = 00000
         name_ok = False
@@ -219,7 +249,9 @@ class Library:
                     new_name = name
                     name_ok = True
 
+            # Zufällige 5-stellige Mitgliedsnummer generieren
             member_id = ''.join(random.choices('0123456789', k=5))
+            # Sicherstellen, dass die Mitgliedsnummer einzigartig ist
             if any(member.member_id == member_id for member in
                    self.member_list):
                 continue
@@ -230,6 +262,10 @@ class Library:
         self.member_list.append(Member(new_member_id, new_name))
 
     def remove_member(self, member):
+        """
+        Entfernt ein Mitglied aus der Bibliothek und setzt ausgeliehene Bücher zurück.
+        :param member: Das zu entfernende Mitglied.
+        """
         for book in self.book_list:
             if book.borrowed_from == member.member_id:
                 book.borrowed_from = None
@@ -238,6 +274,10 @@ class Library:
         self.list_member()
 
     def give_out(self, book):
+        """
+        Verleiht ein Buch an ein Mitglied.
+        :param book: Das zu verleihende Buch.
+        """
         if book.borrowed_from is None:
             self.list_member(True)
             member_id = input("Gebe eine Mitgliedsnummer ein: ")
@@ -255,6 +295,11 @@ class Library:
         self.list_books()
 
     def get_back(self, book, redirect):
+        """
+        Nimmt ein Buch zurück und gibt es für Ausleihe frei.
+        :param book: Das zurückgegebene Buch.
+        :param redirect: Bestimmt, wohin nach Rückgabe weitergeleitet wird.
+        """
         member_redirect = ""
         for member in self.member_list:
             if member.member_id == book.borrowed_from:
@@ -269,17 +314,28 @@ class Library:
             self.list_member_books(member_redirect)
 
     def import_data(self):
+        """
+        Importiert Bücher- und Mitgliederdaten aus Dateien.
+        """
         result = utility.read_file()
         self.book_list = result["books"]
         self.member_list = result["members"]
 
     def export_data(self):
+        """
+        Exportiert Bücher- und Mitgliederdaten in Dateien.
+        """
         utility.save_file(self.book_list, self.member_list)
 
+
 def close_programm():
+    """
+    Beendet das Programm und speichert die aktuellen Daten.
+    """
     print("Programm wird beendet ...")
     library.export_data()
     quit()
+
 
 if __name__ == "__main__":
     try:
