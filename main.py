@@ -61,7 +61,7 @@ class Library:
 
         while True:
             eingabe = input("Was möchtest du machen? ")
-            if eingabe == "1" or eingabe == "2" or eingabe == "3":
+            if eingabe in ["1", "2", "3"]:
                 user_input_id = input("Gib ID ein: ")
                 if utility.check_if_empty(user_input_id):
                     print("Ungültige Eingabe.")
@@ -114,7 +114,7 @@ class Library:
 
             while True:
                 eingabe = input("Was möchtest du machen? ")
-                if eingabe == "1" or eingabe == "2":
+                if eingabe in ["1", "2"]:
                     user_input_id = input("Mitgliedsnummer eingeben: ")
                     user_input_member = ""
                     if any(member.member_id == user_input_id for member in self.member_list):
@@ -225,9 +225,10 @@ class Library:
         Entfernt ein Buch aus der Bibliothek und aktualisiert ggf. das Mitglied.
         :param book: Das zu entfernende Buch.
         """
-        for member in self.member_list:
-            if member.member_id == book.borrowed_from:
-                member.give_back(book)
+        if book.borrowed_from is not None:
+            for member in self.member_list:
+                if member.member_id == book.borrowed_from:
+                    member.give_back(book)
 
         self.book_list.remove(book)
         self.list_books()
